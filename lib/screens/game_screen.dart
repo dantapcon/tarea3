@@ -78,23 +78,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     // Escucha el acelerómetro
     _accelerometerSubscription = accelerometerEventStream().listen(
       (AccelerometerEvent event) {
-        if (_gameStarted && !_gameOver) {
+        if (_gameStarted && !_gameOver && mounted) {
           setState(() {
-            // Invertimos X porque el acelerómetro es al revés
-            _velocityX += event.x * 0.5;
-            _velocityY += event.y * 0.5;
+            // Control más suave: usar directamente la inclinación
+            // Invertir los ejes para que sea más intuitivo
+            _velocityX = -event.x * 0.4; // Reducido de 0.8 a 0.4
+            _velocityY = event.y * 0.4;   // Reducido de 0.8 a 0.4
             
-            // Límite de velocidad
-            _velocityX = _velocityX.clamp(-15.0, 15.0);
-            _velocityY = _velocityY.clamp(-15.0, 15.0);
+            // Límite de velocidad más bajo para mejor control
+            _velocityX = _velocityX.clamp(-3.0, 3.0); // Reducido de 5.0 a 3.0
+            _velocityY = _velocityY.clamp(-3.0, 3.0); // Reducido de 5.0 a 3.0
             
-            // Actualiza posición
-            _ballX += _velocityX * 0.1;
-            _ballY += _velocityY * 0.1;
+            // Actualiza posición con factor de tiempo más pequeño
+            _ballX += _velocityX * 0.015; // Reducido de 0.02 a 0.015
+            _ballY += _velocityY * 0.015; // Reducido de 0.02 a 0.015
             
-            // Fricción
-            _velocityX *= 0.98;
-            _velocityY *= 0.98;
+            // Asegurar que la pelota no salga de los límites
+            _ballX = _ballX.clamp(-0.95, 0.95);
+            _ballY = _ballY.clamp(-0.95, 0.95);
           });
         }
       },
@@ -114,28 +115,87 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _obstacles.clear();
     final random = Random();
     
-    // Genera obstáculos según el nivel
-    final obstacleCount = 3 + _level;
+    // Genera obstáculos según el nivel (máximo 6)
+    final obstacleCount = min(3 + _level, 6);
+    
     for (int i = 0; i < obstacleCount; i++) {
-      _obstacles.add(Obstacle(
-        x: (random.nextDouble() * 2 - 1) * 0.7,
-        y: (random.nextDouble() * 2 - 1) * 0.7,
-        width: 0.15 + random.nextDouble() * 0.1,
-        height: 0.15 + random.nextDouble() * 0.1,
-      ));
+      bool validPosition = false;
+      int attempts = 0;
+      
+      while (!validPosition && attempts < 20) {
+        attempts++;
+        
+        final newX = (random.nextDouble() * 2 - 1) * 0.7;
+        final newY = (random.nextDouble() * 2 - 1) * 0.7;
+        final newWidth = 0.12 + random.nextDouble() * 0.08;  // Tamaño reducido
+        final newHeight = 0.12 + random.nextDouble() * 0.08;
+        
+        // Verificar que no esté muy cerca del inicio
+        if (sqrt(newX * newX + newY * newY) < 0.25) {
+          continue;
+        }
+        
+        // Verificar que no se superponga con otros obstáculos
+        bool overlaps = false;
+        for (var obstacle in _obstacles) {
+          final dx = (newX - obstacle.x).abs();
+          final dy = (newY - obstacle.y).abs();
+          final minDistanceX = (newWidth + obstacle.width) / 2 + 0.1; // Añadir margen
+          final minDistanceY = (newHeight + obstacle.height) / 2 + 0.1;
+          
+          if (dx < minDistanceX && dy < minDistanceY) {
+            overlaps = true;
+            break;
+          }
+        }
+        
+        if (!overlaps) {
+          _obstacles.add(Obstacle(
+            x: newX,
+            y: newY,
+            width: newWidth,
+            height: newHeight,
+          ));
+          validPosition = true;
+        }
+      }
     }
     
-    // Genera posición del objetivo
+    // Genera posición del objetivo evitando obstáculos
     bool validPosition = false;
-    while (!validPosition) {
+    int attempts = 0;
+    
+    while (!validPosition && attempts < 30) {
+      attempts++;
       final targetX = (random.nextDouble() * 2 - 1) * 0.8;
       final targetY = (random.nextDouble() * 2 - 1) * 0.8;
       
       // Verifica que no esté muy cerca del inicio
-      if (sqrt(targetX * targetX + targetY * targetY) > 0.3) {
+      if (sqrt(targetX * targetX + targetY * targetY) < 0.3) {
+        continue;
+      }
+      
+      // Verificar que no esté dentro de un obstáculo
+      bool insideObstacle = false;
+      for (var obstacle in _obstacles) {
+        final dx = (targetX - obstacle.x).abs();
+        final dy = (targetY - obstacle.y).abs();
+        
+        if (dx < obstacle.width / 2 + 0.1 && dy < obstacle.height / 2 + 0.1) {
+          insideObstacle = true;
+          break;
+        }
+      }
+      
+      if (!insideObstacle) {
         _targetPosition = Offset(targetX, targetY);
         validPosition = true;
       }
+    }
+    
+    // Si no se encontró posición válida, usar una por defecto
+    if (!validPosition) {
+      _targetPosition = Offset(0.7, 0.7);
     }
   }
 

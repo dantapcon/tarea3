@@ -28,12 +28,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   double _compassHeading = 0.0;
   String _compassDirection = 'N';
   
-  // Sensores adicionales
-  double _lightLevel = 0.0;
-  double _proximityValue = 0.0;
-  bool _lightAvailable = false;
-  bool _proximityAvailable = false;
-  
   final List<StreamSubscription> _subscriptions = [];
 
   @override
@@ -55,63 +49,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Acelerómetro
     _subscriptions.add(
       accelerometerEventStream().listen((AccelerometerEvent event) {
-        setState(() {
-          _accX = event.x;
-          _accY = event.y;
-          _accZ = event.z;
-        });
+        if (mounted) {
+          setState(() {
+            _accX = event.x;
+            _accY = event.y;
+            _accZ = event.z;
+          });
+        }
       }),
     );
 
     // Giroscopio
     _subscriptions.add(
       gyroscopeEventStream().listen((GyroscopeEvent event) {
-        setState(() {
-          _gyroX = event.x;
-          _gyroY = event.y;
-          _gyroZ = event.z;
-        });
+        if (mounted) {
+          setState(() {
+            _gyroX = event.x;
+            _gyroY = event.y;
+            _gyroZ = event.z;
+          });
+        }
       }),
     );
 
     // Magnetómetro
     _subscriptions.add(
       magnetometerEventStream().listen((MagnetometerEvent event) {
-        setState(() {
-          _magX = event.x;
-          _magY = event.y;
-          _magZ = event.z;
-        });
+        if (mounted) {
+          setState(() {
+            _magX = event.x;
+            _magY = event.y;
+            _magZ = event.z;
+          });
+        }
       }),
     );
 
     // Brújula
-    FlutterCompass.events?.listen((CompassEvent event) {
-      if (event.heading != null) {
-        setState(() {
-          _compassHeading = event.heading!;
-          _compassDirection = _getCompassDirection(_compassHeading);
-        });
-      }
-    });
-
-    // Sensor de luz (puede no estar disponible)
-    try {
-      // Note: Light sensor no está directamente en sensors_plus
-      // Se simula o se puede usar con plugin específico de plataforma
-      _lightAvailable = false;
-    } catch (e) {
-      _lightAvailable = false;
-    }
-
-    // Sensor de proximidad (puede no estar disponible)
-    try {
-      _proximityAvailable = false;
-    } catch (e) {
-      _proximityAvailable = false;
-    }
+    _subscriptions.add(
+      FlutterCompass.events!.listen((CompassEvent event) {
+        if (event.heading != null && mounted) {
+          setState(() {
+            _compassHeading = event.heading!;
+            _compassDirection = _getCompassDirection(_compassHeading);
+          });
+        }
+      }),
+    );
   }
-
   /// Convierte grados a dirección cardinal
   String _getCompassDirection(double heading) {
     if (heading >= 337.5 || heading < 22.5) return 'N';
@@ -245,73 +230,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             // Brújula
             _buildCompassCard(),
-            const SizedBox(height: 24),
-
-            // Sensores opcionales
-            if (_lightAvailable || _proximityAvailable) ...[
-              const Text(
-                'Sensores Adicionales',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            if (_lightAvailable)
-              SensorCard(
-                title: 'Sensor de Luz',
-                icon: Icons.light_mode,
-                value: '${_lightLevel.toStringAsFixed(0)} lux',
-                subtitle: 'Nivel de iluminación ambiente',
-                color: AppColors.warning,
-              ),
-
-            if (_proximityAvailable) ...[
-              const SizedBox(height: 16),
-              SensorCard(
-                title: 'Sensor de Proximidad',
-                icon: Icons.sensors,
-                value: '${_proximityValue.toStringAsFixed(1)} cm',
-                subtitle: 'Distancia de objetos cercanos',
-                color: AppColors.info,
-              ),
-            ],
-
-            if (!_lightAvailable && !_proximityAvailable) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.info.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.info.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: AppColors.info,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Los sensores de luz y proximidad pueden no estar disponibles en este dispositivo',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
             const SizedBox(height: 20),
           ],
         ),
