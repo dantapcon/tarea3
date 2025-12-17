@@ -336,22 +336,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           // Instrucciones
           if (!_gameStarted && !_gameOver)
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.phonelink_setup,
                         color: AppColors.textSecondary,
+                        size: 20,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Inclina tu dispositivo para mover la pelota',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
+                      Flexible(
+                        child: Text(
+                          'Inclina tu dispositivo para mover la pelota',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],

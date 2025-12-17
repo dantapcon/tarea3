@@ -13,68 +13,89 @@ class HomeScreen extends StatelessWidget {
           gradient: AppColors.lightGradient,
         ),
         child: SafeArea(
-          child: Center(
+          child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Ícono principal animado
-                  TweenAnimationBuilder(
-                    tween: Tween<double>(begin: 0, end: 1),
-                    duration: const Duration(milliseconds: 800),
-                    builder: (context, double value, child) {
-                      return Transform.scale(
-                        scale: value,
-                        child: Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withOpacity(0.3),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.sensors,
-                            size: 60,
-                            color: Colors.white,
-                          ),
-                        ),
+                  // Logo ESPE
+                  Image.network(
+                    'https://srvcas.espe.edu.ec/authenticationendpoint/images/Espe-Angular-Logo.png',
+                    width: 300,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.school,
+                        size: 100,
+                        color: AppColors.primary,
                       );
                     },
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 30),
                   
-                  // Título principal
+                  // Nombre del estudiante
                   const Text(
-                    'Tarea 3',
-                    style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Subtítulo
-                  const Text(
-                    'Uso de Sensores en Flutter',
+                    'Nombre: Danilo Josué Tapia\nCondorcana',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                       height: 1.3,
                     ),
                   ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 20),
+                  
+                  // Materia
+                  const Text(
+                    'Materia: Desarrollo de\nAplicaciones Móviles',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: AppColors.textPrimary,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  // Nivel
+                  const Text(
+                    'Nivel: Sexto',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  // Título del proyecto
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.3),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Tarea 3: Uso de Sensores',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
                   
                   // Tarjetas de información
                   _buildInfoCard(
@@ -87,37 +108,6 @@ class HomeScreen extends StatelessWidget {
                     icon: Icons.gamepad_rounded,
                     title: 'Juego',
                     description: 'Controla el juego con movimiento del dispositivo',
-                  ),
-                  const SizedBox(height: 50),
-                  
-                  // Indicador para navegar
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.touch_app,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Usa la barra inferior para navegar',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ],
               ),

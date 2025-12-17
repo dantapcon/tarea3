@@ -28,6 +28,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   double _compassHeading = 0.0;
   String _compassDirection = 'N';
   
+  // Timer para actualizar UI
+  Timer? _updateTimer;
+  
   final List<StreamSubscription> _subscriptions = [];
 
   @override
@@ -41,20 +44,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     for (var subscription in _subscriptions) {
       subscription.cancel();
     }
+    _updateTimer?.cancel();
     super.dispose();
   }
 
   /// Inicializa todos los sensores
   void _initSensors() {
+    // Timer para actualizar UI cada 100ms (10 veces por segundo)
+    _updateTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (mounted) {
+        setState(() {
+          // Solo actualiza la UI, los valores ya están actualizados
+        });
+      }
+    });
+    
     // Acelerómetro
     _subscriptions.add(
       accelerometerEventStream().listen((AccelerometerEvent event) {
         if (mounted) {
-          setState(() {
-            _accX = event.x;
-            _accY = event.y;
-            _accZ = event.z;
-          });
+          _accX = event.x;
+          _accY = event.y;
+          _accZ = event.z;
         }
       }),
     );
@@ -63,11 +74,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _subscriptions.add(
       gyroscopeEventStream().listen((GyroscopeEvent event) {
         if (mounted) {
-          setState(() {
-            _gyroX = event.x;
-            _gyroY = event.y;
-            _gyroZ = event.z;
-          });
+          _gyroX = event.x;
+          _gyroY = event.y;
+          _gyroZ = event.z;
         }
       }),
     );
@@ -76,11 +85,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _subscriptions.add(
       magnetometerEventStream().listen((MagnetometerEvent event) {
         if (mounted) {
-          setState(() {
-            _magX = event.x;
-            _magY = event.y;
-            _magZ = event.z;
-          });
+          _magX = event.x;
+          _magY = event.y;
+          _magZ = event.z;
         }
       }),
     );
@@ -89,10 +96,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _subscriptions.add(
       FlutterCompass.events!.listen((CompassEvent event) {
         if (event.heading != null && mounted) {
-          setState(() {
-            _compassHeading = event.heading!;
-            _compassDirection = _getCompassDirection(_compassHeading);
-          });
+          _compassHeading = event.heading!;
+          _compassDirection = _getCompassDirection(_compassHeading);
         }
       }),
     );
